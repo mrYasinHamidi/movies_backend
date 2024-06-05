@@ -1,21 +1,13 @@
 // server.js
 const express = require('express');
-const connectDB = require('./config/db');
-const dotenv = require('dotenv');
 
-dotenv.config();
 
 const app = express();
+const router = express.Router();
 
-// Connect Database
-connectDB();
+router.get('/', (req, res) => {
+    res.send('API is working');
+});
+app.use('/api/auth', router);
 
-// Init Middleware
-app.use(express.json({ extended: false }));
-
-// Define Routes
-app.use('/api/auth', require('./routes/auth'));
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+app.listen(5000, () => console.log(`Server started`));
