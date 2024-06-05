@@ -18,7 +18,7 @@ const app = express();
 const mongoose = require('mongoose');
 
 const port = process.env.PORT || 3000;
-const db_uri = process.env.DB_URI || 'mongodb://127.0.0.1:27017/movies';
+const db_uri = process.env.DATABASE_URL || 'mongodb://127.0.0.1:27017/movies';
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
