@@ -2,8 +2,10 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const Schema = mongoose.Schema;
 const passwordValidator = require('password-validator');
-
+const jwt = require('jsonwebtoken');
 const pwdSchema = new passwordValidator();
+require('dotenv').config();
+
 pwdSchema
     .is().min(8)
     .is().max(100)
@@ -51,6 +53,13 @@ userSchema.pre('save', async function (next) {
 
 userSchema.methods.comparePassword = function (candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
+};
+
+userSchema.methods.generateToken = function () {
+    const payload = {id: this._id, email: this.email};
+    return jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN
+    });
 };
 
 module.exports = mongoose.model('User', userSchema);
