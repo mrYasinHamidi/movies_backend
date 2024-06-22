@@ -73,4 +73,5 @@ userSchema.methods.generateRefreshToken = function () {
         expiresIn: process.env.JWT_REFRESH_EXPIRES_IN
     });
 };
+
 module.exports = mongoose.model('User', userSchema);
