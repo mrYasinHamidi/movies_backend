@@ -12,7 +12,7 @@ db.connect_db();
 
 app.use(express.json());
 app.use('/api/v1/auth', authRoutes);
-// app.use(authenticator);
+app.use(authenticator);
 app.use('/api/v1/user', userRoutes);
 app.use(errorHandler);
 
