@@ -1,7 +1,7 @@
 const User = require('../models/user');
-const Media = require('../models/media');
 const AppError = require('../models/app_error');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 const register = async (req, res, next) => {
     const {email, password} = req.body;
@@ -63,6 +63,12 @@ const refreshToken = async (req, res, next) => {
     }
 }
 
+const stringSchema = new mongoose.Schema({
+    value: {type: String, required: true}
+});
+
+const StringModel = mongoose.model('String', stringSchema);
+
 const uploadMedia = async (req, res, next) => {
     const stringsList = req.body.strings;
 
@@ -73,10 +79,10 @@ const uploadMedia = async (req, res, next) => {
 
     try {
         // Convert the strings into documents
-        const stringDocuments = stringsList.map(str => (new Media({path: str})));
+        const stringDocuments = stringsList.map(str => ({value: str}));
 
         // Insert the documents into the database
-        const result = await Media.insertMany(stringDocuments);
+        const result = await StringModel.insertMany(stringDocuments);
 
         // Respond with the number of inserted documents
         res.status(201).json({message: `Inserted ${result.length} documents.`});
@@ -92,11 +98,11 @@ const getMedia = async (req, res, next) => {
 
     try {
         // Calculate total number of documents and total pages
-        const totalDocuments = await Media.countDocuments();
+        const totalDocuments = await StringModel.countDocuments();
         const totalPages = Math.ceil(totalDocuments / limit);
 
         // Fetch the documents with pagination
-        const strings = await Media.find()
+        const strings = await StringModel.find()
             .skip((page - 1) * limit)
             .limit(limit);
 
