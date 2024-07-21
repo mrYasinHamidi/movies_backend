@@ -11,6 +11,7 @@ const register = async (req, res, next) => {
         user = new User({email, password});
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
+        user.refreshToken = refreshToken;
         await user.save();
         res.status(201).json({accessToken, refreshToken});
     } catch (e) {
