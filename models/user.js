@@ -33,6 +33,11 @@ const userSchema = new Schema({
             message: props => 'Password validation failed: ' + pwdSchema.validate(props.value, {list: true}).join(', ')
         },
     },
+    role: {
+        type: String,
+        enum: ['Employee', 'Manager', 'Administrator'],
+        default: 'Employee'
+    },
     refreshToken: {
         type: String,
         default: null,
