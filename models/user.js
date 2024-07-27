@@ -9,11 +9,9 @@ require('dotenv').config();
 pwdSchema
     .is().min(8)
     .is().max(100)
-    .has().uppercase()
     .has().lowercase()
     .has().digits(1)
-    .has().not().spaces()
-    .is().not().oneOf(['Passw0rd', 'Password123']);
+    .has().not().spaces();
 
 const userSchema = new Schema({
     email: {
@@ -21,7 +19,19 @@ const userSchema = new Schema({
         required: true,
         unique: true,
         lowercase: true,
+        trim: true,
         match: [/^\S+@\S+\.\S+$/, 'Invalid email format'] // Regular expression for email validation
+    },
+    name: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    phone: {
+        type: String,
+        required: true,
+        unique: true,
+        match: [/^09\d{9}$/, 'Invalid phone number']
     },
     password: {
         type: String,
@@ -32,11 +42,6 @@ const userSchema = new Schema({
             },
             message: props => 'Password validation failed: ' + pwdSchema.validate(props.value, {list: true}).join(', ')
         },
-    },
-    role: {
-        type: String,
-        enum: ['Employee', 'Manager', 'Administrator'],
-        default: 'Employee'
     },
     refreshToken: {
         type: String,

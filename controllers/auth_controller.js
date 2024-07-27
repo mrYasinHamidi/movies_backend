@@ -4,13 +4,18 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
 const register = async (req, res, next) => {
-    const {email, password, role} = req.body;
+    const {email, password, name, phone} = req.body;
     try {
-        let user = await User.findOne({email});
+        let user = await User.findOne({
+            $or: [
+                {email: email},
+                {phone: phone}
+            ]
+        });
         if (user) {
             return next(new AppError('User already exists', 402));
         }
-        user = new User({email, password, role});
+        user = new User({email, name, phone, password});
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
         user.refreshToken = refreshToken;
@@ -23,15 +28,11 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
     try {
-        const {email, password, role} = req.body;
+        const {email, password} = req.body;
         const user = await User.findOne({email});
 
         if (!user || !user.comparePassword(password)) {
             return next(new AppError('Email or password incorrect', 401));
-        }
-
-        if (user.role !== role) {
-            return next(new AppError('Wrong role', 400));
         }
 
         const accessToken = user.generateAccessToken();
@@ -100,4 +101,5 @@ const sendEmail = async (req, res, next) => {
 
     }
 }
+
 module.exports = {register, login, refreshToken, sendEmail}
