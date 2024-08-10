@@ -5,7 +5,7 @@ const AppError = require("../models/app_error");
 const getUsers = async (req, res, next) => {
     try {
         const users = await User.find();
-        return res.status(200).json(users);
+        return res.success('success',users);
     } catch (e) {
         next(e);
     }

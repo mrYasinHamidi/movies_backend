@@ -6,9 +6,11 @@ const errorHandler = require("./services/error_handler");
 const authenticator = require("./services/authenticator");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
+const responseWrapper = require("./services/response_wrapper");
 const port = process.env.PORT || 3000;
 
 db.connect_db();
+app.use(responseWrapper);
 
 app.use(express.json());
 app.use('/api/v1/auth', authRoutes);
