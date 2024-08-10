@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Token = require('../models/token');
 const AppError = require('../models/app_error');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
@@ -16,9 +17,19 @@ const register = async (req, res, next) => {
             return next(new AppError('User already exists', 402));
         }
         user = new User({email, name, phone, password});
-        const accessToken = user.generateAccessToken();
-        const refreshToken = user.generateRefreshToken();
-        user.refreshToken = refreshToken;
+        const accessToken = jwt.sign(
+            {userId: user._id},
+            process.env.JWT_SECRET,
+            {expiresIn: process.env.JWT_EXPIRES_IN}
+        );
+        const refreshToken = jwt.sign(
+            {userId: user._id},
+            process.env.JWT_SECRET,
+            {expiresIn: process.env.JWT_REFRESH_EXPIRES_IN}
+        );
+        await new Token({userId: user._id, token: accessToken, type: 'access'}).save();
+        await new Token({userId: user._id, token: refreshToken, type: 'refresh'}).save();
+
         await user.save();
         res.status(201).json({accessToken, refreshToken});
     } catch (e) {
@@ -34,10 +45,19 @@ const login = async (req, res, next) => {
         if (!user || !user.comparePassword(password)) {
             return next(new AppError('Email or password incorrect', 401));
         }
+        const accessToken = jwt.sign(
+            {userId: user._id},
+            process.env.JWT_SECRET,
+            {expiresIn: process.env.JWT_EXPIRES_IN}
+        );
+        const refreshToken = jwt.sign(
+            {userId: user._id},
+            process.env.JWT_SECRET,
+            {expiresIn: process.env.JWT_REFRESH_EXPIRES_IN}
+        );
+        await new Token({userId: user._id, token: accessToken, type: 'access'}).save();
+        await new Token({userId: user._id, token: refreshToken, type: 'refresh'}).save();
 
-        const accessToken = user.generateAccessToken();
-        const refreshToken = user.generateRefreshToken();
-        user.refreshToken = refreshToken;
         await user.save();
         res.status(201).json({accessToken, refreshToken});
     } catch (e) {

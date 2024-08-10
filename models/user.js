@@ -43,10 +43,6 @@ const userSchema = new Schema({
             message: props => 'Password validation failed: ' + pwdSchema.validate(props.value, {list: true}).join(', ')
         },
     },
-    refreshToken: {
-        type: String,
-        default: null,
-    }
 
 }, {
     timestamps: true // Automatically add createdAt and updatedAt fields
@@ -70,17 +66,4 @@ userSchema.methods.comparePassword = function (candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
 };
 
-userSchema.methods.generateAccessToken = function () {
-    const payload = {id: this._id, email: this.email};
-    return jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRES_IN
-    });
-};
-
-userSchema.methods.generateRefreshToken = function () {
-    const payload = {id: this._id, email: this.email};
-    return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
-        expiresIn: process.env.JWT_REFRESH_EXPIRES_IN
-    });
-};
 module.exports = mongoose.model('User', userSchema);
