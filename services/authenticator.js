@@ -14,7 +14,7 @@ const authenticate = async (req, res, next) => {
         if (!t) {
             return next(new AppError('Invalid Token', 401));
         }
-        req.user = t.userId;
+        req.userId = t.userId;
         next();
     } catch (e) {
         console.log(e);

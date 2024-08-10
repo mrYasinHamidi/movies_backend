@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const Schema = mongoose.Schema;
-const passwordValidator = require('password-validator');
-const jwt = require('jsonwebtoken');
-const pwdSchema = new passwordValidator();
+const PasswordValidator = require('password-validator');
+const pwdSchema = new PasswordValidator();
 require('dotenv').config();
 
 pwdSchema
