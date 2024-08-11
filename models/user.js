@@ -1,9 +1,12 @@
 const mongoose = require('mongoose');
+
 const bcrypt = require('bcryptjs');
+
 const Schema = mongoose.Schema;
+
 const PasswordValidator = require('password-validator');
+
 const pwdSchema = new PasswordValidator();
-require('dotenv').config();
 
 pwdSchema
     .is().min(8)
@@ -32,6 +35,21 @@ const userSchema = new Schema({
         unique: true,
         match: [/^09\d{9}$/, 'Invalid phone number']
     },
+    role: {
+        type: String,
+        required: true,
+        enum: ['manager', 'employee'],
+        default: 'manager',
+    },
+    managerId: {
+        type: mongoose.Types.ObjectId,
+        ref: 'User',
+        required: () => this.role === 'employee'
+    },
+    employees:[{
+        type:mongoose.Types.ObjectId,
+        ref: 'User',
+    }],
     password: {
         type: String,
         required: true,

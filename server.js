@@ -1,12 +1,12 @@
 const express = require('express');
 
 const app = express();
-const db = require('./services/db');
-const errorHandler = require("./services/error_handler");
-const authenticator = require("./services/authenticator");
+const db = require('./middlewares/db');
+const errorHandler = require("./middlewares/error_handler");
+const authenticator = require("./middlewares/authenticator");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
-const responseWrapper = require("./services/response_wrapper");
+const responseWrapper = require("./middlewares/response_wrapper");
 const port = process.env.PORT || 3000;
 
 db.connect_db();

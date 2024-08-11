@@ -1,37 +1,42 @@
 const User = require('../models/user');
+
 const Token = require('../models/token');
+
 const AppError = require('../models/app_error');
-const jwt = require('jsonwebtoken');
+
+const tokenHelper = require('../helpers/token_helper');
+
 const nodemailer = require('nodemailer');
 
 const register = async (req, res, next) => {
     const {email, password, name, phone} = req.body;
     try {
+
         let user = await User.findOne({
             $or: [
                 {email: email},
                 {phone: phone}
             ]
         });
+
         if (user) {
-            return next(new AppError('User already exists', 402));
+            return next(new AppError('User with this email or phone number already exists', 402));
         }
-        user = new User({email, name, phone, password});
-        const accessToken = jwt.sign(
-            {userId: user._id},
-            process.env.JWT_SECRET,
-            {expiresIn: process.env.JWT_EXPIRES_IN}
-        );
-        const refreshToken = jwt.sign(
-            {userId: user._id},
-            process.env.JWT_SECRET,
-            {expiresIn: process.env.JWT_REFRESH_EXPIRES_IN}
-        );
-        await new Token({userId: user._id, token: accessToken, type: 'access'}).save();
-        await new Token({userId: user._id, token: refreshToken, type: 'refresh'}).save();
+
+        user = new User({email: email, name: name, phone: phone, password: password});
+
+        const accessToken = tokenHelper.generateToken(user._id, true);
+
+        const refreshToken = tokenHelper.generateToken(user._id, false);
+
+        const token = new Token({userId: user._id, token: refreshToken});
+
+        await token.save();
 
         await user.save();
-        res.status(201).json({accessToken, refreshToken});
+
+        return res.status(201).json({accessToken, refreshToken});
+
     } catch (e) {
         next(e);
     }
@@ -40,26 +45,27 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
     try {
         const {email, password} = req.body;
-        const user = await User.findOne({email});
+
+        let user = await User.findOne({email});
 
         if (!user || !user.comparePassword(password)) {
             return next(new AppError('Email or password incorrect', 401));
         }
-        const accessToken = jwt.sign(
-            {userId: user._id},
-            process.env.JWT_SECRET,
-            {expiresIn: process.env.JWT_EXPIRES_IN}
-        );
-        const refreshToken = jwt.sign(
-            {userId: user._id},
-            process.env.JWT_SECRET,
-            {expiresIn: process.env.JWT_REFRESH_EXPIRES_IN}
-        );
-        await new Token({userId: user._id, token: accessToken, type: 'access'}).save();
-        await new Token({userId: user._id, token: refreshToken, type: 'refresh'}).save();
+
+        const userId = user._id;
+
+        const accessToken = tokenHelper.generateToken(userId, true);
+
+        const refreshToken = tokenHelper.generateToken(userId, false);
+
+        const token = new Token({userId: userId, token: refreshToken});
+
+        await token.save();
 
         await user.save();
-        res.status(201).json({accessToken, refreshToken});
+
+        return res.status(201).json({accessToken, refreshToken});
+
     } catch (e) {
         next(e);
     }
@@ -70,21 +76,33 @@ const refreshToken = async (req, res, next) => {
         const {refreshToken} = req.body;
 
         if (!refreshToken) {
-            return res.status(400).json({message: 'No refresh token provided'});
+            return next(new AppError('No refresh token provided', 401));
         }
 
-        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+        let token = await Token.findOne({token: refreshToken});
 
-        const user = await User.findById(decoded.id);
-        if (!user || user.refreshToken !== refreshToken) {
-            console.log(user);
-            return next(new AppError('Invalid refresh token', 401));
+        if (!token) {
+            return next(new AppError('Invalid refresh token provided', 401));
         }
-        const newAccess = user.generateAccessToken();
-        const newRefresh = user.generateRefreshToken();
-        user.refreshToken = newRefresh;
-        await user.save();
-        res.status(200).json({newAccess, newRefresh});
+
+        const isTokenValid = tokenHelper.isValid(refreshToken);
+
+        if (!isTokenValid) {
+            return next(new AppError('Invalid refresh token provided', 401));
+        }
+
+        const userId = tokenHelper.getUserId(refreshToken);
+
+        const newAccessToken = tokenHelper.generateToken(userId, true);
+
+        const newRefreshToken = tokenHelper.generateToken(userId, false);
+
+        token.token = newRefreshToken;
+
+        await token.save();
+
+        res.status(200).json({newAccessToken, newRefreshToken});
+
     } catch (e) {
         next(e);
     }
