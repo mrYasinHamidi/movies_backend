@@ -1,41 +1,75 @@
 const User = require('../models/user');
-const Employee = require('../models/Employee');
+
 const AppError = require("../models/app_error");
 
 const getUsers = async (req, res, next) => {
     try {
+
+
         const users = await User.find();
-        return res.success('success',users);
+
+        return res.success('success', users);
     } catch (e) {
+
         next(e);
+
     }
 }
+
 const createEmployee = async (req, res, next) => {
     try {
 
-        const {username, name, family, password} = req.body;
+        const {email, name, phone, password} = req.body;
 
-        let employee = await Employee.findOne({username});
+        let user = await User.findOne({
+            $or: [
+                {email: email},
+                {phone: phone}
+            ]
+        });
 
-        if (employee) {
-            return next(new AppError('An employee with this username already exists', 401));
+        if (user) {
+            return next(new AppError('An user with this email or phone number already exists.', 401));
         }
 
-        employee = new Employee({
-            userId: req.userId,
-            username: username,
+        user = new User({
+            email: email,
             name: name,
-            family: family,
+            phone: phone,
+            role: 'employee',
+            managerId: req.user._id,
             password: password
         });
 
-        await employee.save();
+        await user.save();
 
-        res.status(200).json({'message':'Employee created successfully.'});
+        res.status(200).json({'message': 'Employee created successfully.'});
 
     } catch (err) {
         next(err);
     }
 }
 
-module.exports = {getUsers, createEmployee};
+const getEmployees = async (req, res, next) => {
+    try {
+
+        const user = req.user;
+
+        const employees = await User
+            .find({managerId: user._id})
+            .select(
+                {
+                    password: 0,
+                    employees: 0,
+                    role: 0,
+                    __v: 0
+                });
+
+        return res.success(employees);
+
+    } catch (e) {
+        next(e);
+    }
+}
+
+module.exports = {getUsers, createEmployee, getEmployees};

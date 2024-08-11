@@ -1,5 +1,5 @@
 function responseWrapper(req, res, next) {
-    res.success = (message, data = null) => {
+    res.success = (data = null, message = 'success') => {
         res.json({
             status: 'success',
             message: message,

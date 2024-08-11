@@ -1,24 +1,42 @@
-const jwt = require("jsonwebtoken");
 const Token = require("../models/token");
+
+const User = require("../models/user");
+
 const AppError = require("../models/app_error");
-require('dotenv').config();
+
+const tokenHelper = require("../helpers/token_helper");
 
 const authenticate = async (req, res, next) => {
     try {
+
         const token = req.headers.authorization.replace('Bearer ', '');
+
         if (!token) {
             return next(new AppError('No token provided', 401));
         }
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const t = await Token.findOne({token: token, type: 'access'});
-        if (!t) {
-            return next(new AppError('Invalid Token', 401));
+
+        if (!tokenHelper.isValid(token)) {
+            return next(new AppError('Invalid token', 401));
         }
-        req.userId = t.userId;
+
+        const userId = tokenHelper.getUserId(token);
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return next(new AppError('Invalid token', 401));
+        }
+
+        req.user = user;
+
         next();
+
     } catch (e) {
+
         console.log(e);
+
         next(new AppError('Unauthorized', 401));
+
     }
 }
 

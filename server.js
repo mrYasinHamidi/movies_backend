@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 
 const app = express();
@@ -10,6 +12,7 @@ const responseWrapper = require("./middlewares/response_wrapper");
 const port = process.env.PORT || 3000;
 
 db.connect_db();
+
 app.use(responseWrapper);
 
 app.use(express.json());
