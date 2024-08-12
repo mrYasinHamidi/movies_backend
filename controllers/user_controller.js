@@ -52,20 +52,20 @@ const createEmployee = async (req, res, next) => {
 
 const getEmployees = async (req, res, next) => {
     try {
+        const {page, perPage} = req.parameters;
+
+        console.log(page, perPage);
 
         const user = req.user;
 
-        const employees = await User
-            .find({managerId: user._id})
-            .select(
-                {
-                    password: 0,
-                    employees: 0,
-                    role: 0,
-                    __v: 0
-                });
+        if (page && perPage) {
+            const response = await User.getPaginatedEmployees(user._id, page, perPage);
+            return res.success('success', response);
+        }
 
-        return res.success(employees);
+        const employees = await User.find().employeesOf(user._id).format().exec();
+
+        return res.success('success', employees);
 
     } catch (e) {
         next(e);

@@ -46,8 +46,8 @@ const userSchema = new Schema({
         ref: 'User',
         required: () => this.role === 'employee'
     },
-    employees:[{
-        type:mongoose.Types.ObjectId,
+    employees: [{
+        type: mongoose.Types.ObjectId,
         ref: 'User',
     }],
     password: {
@@ -64,6 +64,26 @@ const userSchema = new Schema({
 }, {
     timestamps: true // Automatically add createdAt and updatedAt fields
 });
+
+userSchema.query.employeesOf = function (userId) {
+    return this.where({managerId: userId})
+}
+
+userSchema.query.paginate = function (page, perPage) {
+    const skip = (page - 1) * perPage;
+    return this.skip(skip).limit(perPage);
+}
+
+userSchema.query.format = function () {
+    return this.select(
+        {
+            password: 0,
+            employees: 0,
+            role: 0,
+            __v: 0
+        }
+    );
+}
 
 userSchema.pre('save', async function (next) {
     if (this.isModified('password') || this.isNew) {
@@ -83,4 +103,25 @@ userSchema.methods.comparePassword = function (candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
 };
 
+userSchema.static.getPaginatedEmployees = async function (userId, page, perPage) {
+    try {
+        const totalDocuments = await this.countDocuments();
+
+        const users = await this.find()
+            .employeesOf(userId)
+            .paginate(page, perPage)
+            .exec();
+
+        const totalPages = Math.ceil(totalDocuments / perPage);
+
+        return {
+            users,
+            totalPages,
+            currentPage: page,
+        };
+
+    } catch (err) {
+        throw err;
+    }
+}
 module.exports = mongoose.model('User', userSchema);
