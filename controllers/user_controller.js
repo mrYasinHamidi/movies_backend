@@ -16,6 +16,34 @@ const getUsers = async (req, res, next) => {
     }
 }
 
+const getEmployees = async (req, res, next) => {
+    try {
+        const page = parseInt(req.query.page, 10);
+
+        const perPage = parseInt(req.query.perPage, 10);
+
+        const paginate = req.query.paginate === 'true';
+
+        if (isNaN(page) || isNaN(perPage)) {
+            return next(new AppError('Invalid query parameters', 403));
+        }
+
+        const user = req.user;
+
+        if (paginate) {
+            const response = await User.getPaginatedEmployees(user._id, page, perPage);
+            return res.success('success', response);
+        }
+
+        const employees = await User.find().employeesOf(user._id).format().exec();
+
+        return res.success('success', employees);
+
+    } catch (e) {
+        next(e);
+    }
+}
+
 const createEmployee = async (req, res, next) => {
     try {
 
@@ -50,32 +78,41 @@ const createEmployee = async (req, res, next) => {
     }
 }
 
-const getEmployees = async (req, res, next) => {
+const updateEmployee = async (req, res, next) => {
     try {
-        const page = parseInt(req.query.page, 10);
-
-        const perPage = parseInt(req.query.perPage, 10);
-
-        const paginate = req.query.paginate === 'true';
-
-        if (isNaN(page) || isNaN(perPage)) {
-            return next(new AppError('Invalid query parameters', 403));
-        }
+        const {email, name, phone} = req.body;
 
         const user = req.user;
 
-        if (paginate) {
-            const response = await User.getPaginatedEmployees(user._id, page, perPage);
-            return res.success('success', response);
+        const emailExists = User.findOne({email: email, _id: {$ne: user._id}});
+
+        const phoneExists = User.findOne({phone: phone, _id: {$ne: user._id}});
+
+        if (emailExists) {
+            return next(new AppError('Email already exists', 403));
         }
 
-        const employees = await User.find().employeesOf(user._id).format().exec();
+        if (phoneExists) {
+            return next(new AppError('Phone already exists', 403));
+        }
 
-        return res.success('success', employees);
+        user.email = email;
+        user.phone = phone;
+        user.name = name;
 
-    } catch (e) {
-        next(e);
+        await user.save();
+
+        res.success('success', user);
+    } catch (err) {
+        next(err);
     }
 }
+
+const removeEmployee = async (req, res, next) => {
+}
+
+const deleteEmployee = async (req, res, next) => {
+}
+
 
 module.exports = {getUsers, createEmployee, getEmployees};
