@@ -52,13 +52,19 @@ const createEmployee = async (req, res, next) => {
 
 const getEmployees = async (req, res, next) => {
     try {
-        const {page, perPage} = req.parameters;
+        const page = parseInt(req.query.page, 10);
 
-        console.log(page, perPage);
+        const perPage = parseInt(req.query.perPage, 10);
+
+        const paginate = req.query.paginate === 'true';
+
+        if (isNaN(page) || isNaN(perPage)) {
+            return next(new AppError('Invalid query parameters', 403));
+        }
 
         const user = req.user;
 
-        if (page && perPage) {
+        if (paginate) {
             const response = await User.getPaginatedEmployees(user._id, page, perPage);
             return res.success('success', response);
         }

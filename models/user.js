@@ -103,19 +103,21 @@ userSchema.methods.comparePassword = function (candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
 };
 
-userSchema.static.getPaginatedEmployees = async function (userId, page, perPage) {
+userSchema.statics.getPaginatedEmployees = async function (userId, page, perPage) {
     try {
         const totalDocuments = await this.countDocuments();
 
         const users = await this.find()
             .employeesOf(userId)
             .paginate(page, perPage)
+            .format()
             .exec();
 
         const totalPages = Math.ceil(totalDocuments / perPage);
 
         return {
             users,
+            totalCount: totalDocuments,
             totalPages,
             currentPage: page,
         };
@@ -124,4 +126,5 @@ userSchema.static.getPaginatedEmployees = async function (userId, page, perPage)
         throw err;
     }
 }
+
 module.exports = mongoose.model('User', userSchema);
