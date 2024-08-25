@@ -6,7 +6,6 @@ function responseWrapper(req, res, next) {
             data: data,
             statusCode: 200,
             timestamp: new Date().toISOString(),
-            requestId: req.headers['x-request-id'] || req.id || 'default-request-id'
         });
     };
 
@@ -17,7 +16,6 @@ function responseWrapper(req, res, next) {
             data: data,
             statusCode: statusCode,
             timestamp: new Date().toISOString(),
-            requestId: req.headers['x-request-id'] || req.id || 'default-request-id'
         });
     };
 

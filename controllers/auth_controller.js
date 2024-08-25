@@ -9,7 +9,7 @@ const tokenHelper = require('../helpers/token_helper');
 const nodemailer = require('nodemailer');
 
 const register = async (req, res, next) => {
-    const {email, password, name, phone} = req.body;
+    const {email, password, password_confirm, name, phone} = req.body;
     try {
 
         let user = await User.findOne({
@@ -22,20 +22,14 @@ const register = async (req, res, next) => {
         if (user) {
             return next(new AppError('User with this email or phone number already exists', 402));
         }
+        if (password !== password_confirm) {
+            return next(new AppError('Password and password confirmation is not equal', 402));
+        }
 
         user = new User({email: email, name: name, phone: phone, password: password});
 
-        const accessToken = tokenHelper.generateToken(user._id, true);
-
-        const refreshToken = tokenHelper.generateToken(user._id, false);
-
-        const token = new Token({userId: user._id, token: refreshToken});
-
-        await token.save();
-
         await user.save();
-
-        return res.status(201).json({accessToken, refreshToken});
+        return res.success();
 
     } catch (e) {
         next(e);
@@ -64,7 +58,7 @@ const login = async (req, res, next) => {
 
         await user.save();
 
-        return res.status(201).json({accessToken, refreshToken});
+        return res.success({accessToken, refreshToken});
 
     } catch (e) {
         next(e);

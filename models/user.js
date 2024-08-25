@@ -31,9 +31,36 @@ const userSchema = new Schema({
     },
     phone: {
         type: String,
-        required: true,
         unique: true,
-        match: [/^09\d{9}$/, 'Invalid phone number']
+        validate: {
+            validator: function (value) {
+                return this.role !== 'manager' || /^09\d{9}$/.test(value);
+            },
+            message: 'Invalid phone number'
+        }
+    },
+    nationalCode: {
+        type: String,
+        unique: true
+    },
+    personnelCode: {
+        type: Number,
+        required: () => this.role === 'employee',
+    },
+    workStartDate: {
+        type: Date,
+        required: function () {
+            return this.role === 'employee';
+        },
+        default: Date.now
+    },
+    workEndDate: {
+        type: Date,
+    },
+    username: {
+        type: String,
+        unique: true,
+        required: () => this.role === 'employee',
     },
     role: {
         type: String,
@@ -65,8 +92,25 @@ const userSchema = new Schema({
     timestamps: true // Automatically add createdAt and updatedAt fields
 });
 
-userSchema.query.employeesOf = function (userId) {
-    return this.where({managerId: userId})
+userSchema.query.employeesOf = function (userId, name, personnelCode) {
+
+    const query = {managerId: userId};
+
+    if (name) {
+        query.name = {
+            $regex: name,
+            $options: 'i'
+        };
+    }
+
+    if (personnelCode) {
+        query.personnelCode = {
+            $regex: personnelCode,
+            $options: 'i'
+        }
+    }
+
+    return this.where(query);
 }
 
 userSchema.query.paginate = function (page, perPage) {
@@ -75,27 +119,18 @@ userSchema.query.paginate = function (page, perPage) {
 }
 
 userSchema.query.format = function () {
-    return this.select(
-        {
-            password: 0,
-            employees: 0,
-            role: 0,
-            __v: 0
-        }
-    );
+    return this.select('-password -employees -role -__v');
 }
 
 userSchema.pre('save', async function (next) {
-    if (this.isModified('password') || this.isNew) {
-        try {
-            const salt = await bcrypt.genSalt(10);
-            this.password = await bcrypt.hash(this.password, salt);
-            next();
-        } catch (error) {
-            next(error);
-        }
-    } else {
+    if (!this.isModified('password')) return next();
+
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
         next();
+    } catch (error) {
+        next(error);
     }
 });
 
@@ -103,12 +138,16 @@ userSchema.methods.comparePassword = function (candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
 };
 
-userSchema.statics.getPaginatedEmployees = async function (userId, page, perPage) {
-    try {
-        const totalDocuments = await this.countDocuments();
+userSchema.statics.exists = async function (filter) {
+    const count = await this.countDocuments(filter);
+    return count > 0;
+}
 
-        const users = await this.find()
-            .employeesOf(userId)
+userSchema.statics.getPaginatedEmployees = async function (userId, page, perPage, name, personnelCode) {
+    try {
+        const query = this.find().employeesOf(userId, name, personnelCode);
+        const totalDocuments = await query.countDocuments();
+        const users = await query
             .paginate(page, perPage)
             .format()
             .exec();
