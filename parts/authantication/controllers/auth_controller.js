@@ -1,10 +1,10 @@
-const User = require('../models/user');
+const User = require('../../user/models/user');
 
 const Token = require('../models/token');
 
-const AppError = require('../models/app_error');
+const AppError = require('../../../models/app_error');
 
-const tokenHelper = require('../helpers/token_helper');
+const tokenHelper = require('../../../helpers/token_helper');
 
 const nodemailer = require('nodemailer');
 

@@ -1,6 +1,6 @@
 const User = require('../models/user');
 
-const AppError = require("../models/app_error");
+const AppError = require("../../../models/app_error");
 
 const getUsers = async (req, res, next) => {
     try {
@@ -195,6 +195,5 @@ const deleteEmployee = async (req, res, next) => {
         next(err);
     }
 };
-
 
 module.exports = {getUsers, createEmployee, getEmployees, updateEmployee, deleteEmployee};
