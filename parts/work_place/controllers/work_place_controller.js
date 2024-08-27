@@ -2,7 +2,7 @@ const WorkPlace = require('../models/work_place');
 
 const createWorkPlace = async (req, res, next) => {
     try {
-        const workPlace = new WorkPlace(req.body);
+        const workPlace = new WorkPlace({managerId: req.user.id, ...req.body});
 
         const savedWorkPlace = await workPlace.save();
 
@@ -12,20 +12,35 @@ const createWorkPlace = async (req, res, next) => {
         next(err);
     }
 }
+
 const getWorkPlaces = async (req, res, next) => {
     try {
-        const places = await WorkPlace.find();
-        res.success(places);
+        const name = req.query.name;
+
+        const city = req.query.city;
+
+        const paginate = req.query.paginate;
+
+        const filter = WorkPlace.filter({managerId: req.user.id, name, city});
+
+        if (paginate && paginate === 'true') {
+            const places = await WorkPlace.paginate(filter, req.query.page, req.query.limit);
+            return res.success(places);
+        } else {
+            const places = await WorkPlace.find(filter);
+            return res.success(places);
+        }
 
     } catch (err) {
         next(err);
     }
 }
-const getWorkPlaceById = async (req, res) => {
+const getWorkPlaceById = async (req, res, next) => {
 
 }
-const updateWorkPlace = async (req, res) => {
+const updateWorkPlace = async (req, res, next) => {
 }
-const deleteWorkPlace = async (req, res) => {
+const deleteWorkPlace = async (req, res, next) => {
 }
+
 module.exports = {createWorkPlace, getWorkPlaceById, getWorkPlaces, updateWorkPlace, deleteWorkPlace}

@@ -2,9 +2,17 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
+const paginatePlugin = require('../../../databse/plugins/pagination');
+const filteringPlugin = require('../../../databse/plugins/filtering');
+
 const WorkPlaceSchema = new Schema({
         name: {
             type: String,
+            required: true
+        },
+        managerId: {
+            type: mongoose.Types.ObjectId,
+            ref: 'User',
             required: true
         },
         city: {
@@ -33,5 +41,7 @@ const WorkPlaceSchema = new Schema({
         timestamp: true
     },
 );
+WorkPlaceSchema.plugin(paginatePlugin);
+WorkPlaceSchema.plugin(filteringPlugin);
 
 module.exports = mongoose.model('WorkPlace', WorkPlaceSchema);
