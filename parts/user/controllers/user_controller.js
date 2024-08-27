@@ -18,36 +18,28 @@ const getUsers = async (req, res, next) => {
 
 const getEmployees = async (req, res, next) => {
     try {
-        const page = parseInt(req.query.page, 10) || 1;
-
-        const perPage = parseInt(req.query.perPage, 10) || 10;
-
         const paginate = req.query.paginate === 'true';
 
         const {name, personnelCode} = req.query;
 
-        if (isNaN(page) || isNaN(perPage) || page <= 0 || perPage <= 0) {
-            return next(new AppError('Invalid query parameters', 403));
-        }
-
         const userId = req.user._id;
+
 
         let employees;
 
+        const filter = User.filter({name, personnelCode, managerId: userId});
+
         if (paginate) {
-            employees = await User.getPaginatedEmployees(userId, page, perPage, name, personnelCode);
+            employees = await User.paginate(filter, req.query.page, req.query.limit);
         } else {
-            employees = await User.find()
-                .employeesOf(userId, name, personnelCode)
-                .format()
-                .exec();
+            employees = await User.find(filter);
         }
 
-        res.success('success', employees);
+        res.success(employees);
     } catch (e) {
         next(e);
     }
-};
+}
 
 const createEmployee = async (req, res, next) => {
     try {
@@ -194,6 +186,6 @@ const deleteEmployee = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-};
+}
 
 module.exports = {getUsers, createEmployee, getEmployees, updateEmployee, deleteEmployee};

@@ -3,11 +3,12 @@ require('dotenv').config();
 const express = require('express');
 
 const app = express();
-const db = require('./middlewares/db');
+const db = require('./databse/db');
 const errorHandler = require("./middlewares/error_handler");
 const authenticator = require("./middlewares/authenticator");
 const authRoutes = require("./parts/authantication/routes/auth");
 const userRoutes = require("./parts/user/routes/user");
+const workPlaceRoutes = require("./parts/work_place/routes/work_place");
 const responseWrapper = require("./middlewares/response_wrapper");
 const port = process.env.PORT || 3000;
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/v1/auth', authRoutes);
 app.use(authenticator);
 app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/work_place', workPlaceRoutes);
 app.use(errorHandler);
 
 const server = app.listen(port, "0.0.0.0", () => {

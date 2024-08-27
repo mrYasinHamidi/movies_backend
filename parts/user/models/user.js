@@ -8,6 +8,10 @@ const PasswordValidator = require('password-validator');
 
 const pwdSchema = new PasswordValidator();
 
+const paginatePlugin = require('../../../databse/plugins/pagination');
+const filteringPlugin = require('../../../databse/plugins/filtering');
+
+
 pwdSchema
     .is().min(8)
     .is().max(100)
@@ -92,35 +96,9 @@ const userSchema = new Schema({
     timestamps: true // Automatically add createdAt and updatedAt fields
 });
 
-userSchema.query.employeesOf = function (userId, name, personnelCode) {
+userSchema.plugin(paginatePlugin);
 
-    const query = {managerId: userId};
-
-    if (name) {
-        query.name = {
-            $regex: name,
-            $options: 'i'
-        };
-    }
-
-    if (personnelCode) {
-        query.personnelCode = {
-            $regex: personnelCode,
-            $options: 'i'
-        }
-    }
-
-    return this.where(query);
-}
-
-userSchema.query.paginate = function (page, perPage) {
-    const skip = (page - 1) * perPage;
-    return this.skip(skip).limit(perPage);
-}
-
-userSchema.query.format = function () {
-    return this.select('-password -employees -role -__v');
-}
+userSchema.plugin(filteringPlugin);
 
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
@@ -141,29 +119,6 @@ userSchema.methods.comparePassword = function (candidatePassword) {
 userSchema.statics.exists = async function (filter) {
     const count = await this.countDocuments(filter);
     return count > 0;
-}
-
-userSchema.statics.getPaginatedEmployees = async function (userId, page, perPage, name, personnelCode) {
-    try {
-        const query = this.find().employeesOf(userId, name, personnelCode);
-        const totalDocuments = await query.countDocuments();
-        const users = await query
-            .paginate(page, perPage)
-            .format()
-            .exec();
-
-        const totalPages = Math.ceil(totalDocuments / perPage);
-
-        return {
-            users,
-            totalCount: totalDocuments,
-            totalPages,
-            currentPage: page,
-        };
-
-    } catch (err) {
-        throw err;
-    }
 }
 
 module.exports = mongoose.model('User', userSchema);
