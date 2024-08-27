@@ -35,12 +35,32 @@ const getWorkPlaces = async (req, res, next) => {
         next(err);
     }
 }
-const getWorkPlaceById = async (req, res, next) => {
 
+const getWorkPlaceById = async (req, res, next) => {
+    try {
+        const place = await WorkPlace.findById(req.params.id);
+        res.success(place);
+    } catch (err) {
+        next(err);
+    }
 }
+
 const updateWorkPlace = async (req, res, next) => {
+    try {
+        const updatedPlace = WorkPlace.findByIdAndUpdate(req.params.id, req.body, {runValidators: true});
+        res.success(updatedPlace);
+    } catch (err) {
+        next(err);
+    }
 }
+
 const deleteWorkPlace = async (req, res, next) => {
+    try {
+        const deletedPlace = WorkPlace.findByIdAndDelete(req.params.id);
+        res.success(deletedPlace);
+    } catch (err) {
+        next(err);
+    }
 }
 
 module.exports = {createWorkPlace, getWorkPlaceById, getWorkPlaces, updateWorkPlace, deleteWorkPlace}
