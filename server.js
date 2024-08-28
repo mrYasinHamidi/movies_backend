@@ -9,6 +9,7 @@ const authenticator = require("./middlewares/authenticator");
 const authRoutes = require("./parts/authantication/routes/auth");
 const userRoutes = require("./parts/user/routes/user");
 const workPlaceRoutes = require("./parts/work_place/routes/work_place");
+const shiftRotes = require("./parts/shift/routes/shift_routes");
 const responseWrapper = require("./middlewares/response_wrapper");
 const port = process.env.PORT || 3000;
 
@@ -21,6 +22,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use(authenticator);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/work_place', workPlaceRoutes);
+app.use('/api/v1/shift', shiftRotes);
 app.use(errorHandler);
 
 const server = app.listen(port, "0.0.0.0", () => {
