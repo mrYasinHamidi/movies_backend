@@ -58,6 +58,10 @@ const userSchema = new Schema({
         },
         default: Date.now
     },
+    isPresence: {
+        type: Boolean,
+        default: false
+    },
     workEndDate: {
         type: Date,
     },
