@@ -36,7 +36,7 @@ const shiftSchema = new Schema({
         required: true
     },
     floatTime: Number,
-});
+}, {timestamps: true});
 
 shiftSchema.plugin(filterPlugin);
 
