@@ -23,7 +23,7 @@ const getEmployeeDashboard = async (user, req, res, next) => {
 
 const getManagerDashboard = async (user, req, res, next) => {
     const employees = await User.find({managerId: user.id});
-    const absentees = employees.filter(item => item.presence === false);
+    const absentees = employees.filter(item => item.presence === undefined);
     const absences = employees.filter(item => item.presence === true);
 
     return res.success({

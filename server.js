@@ -11,6 +11,7 @@ const userRoutes = require("./parts/user/routes/user");
 const workPlaceRoutes = require("./parts/work_place/routes/work_place");
 const shiftRotes = require("./parts/shift/routes/shift_routes");
 const commuteRoutes = require("./parts/commute/routes/commute_routes");
+const dashboardRoutes = require("./parts/dashboard/routes/dashboard_routes");
 const responseWrapper = require("./middlewares/response_wrapper");
 const port = process.env.PORT || 3000;
 
@@ -25,6 +26,7 @@ app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/work_place', workPlaceRoutes);
 app.use('/api/v1/shift', shiftRotes);
 app.use('/api/v1/commute', commuteRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 app.use(errorHandler);
 
 const server = app.listen(port, "0.0.0.0", () => {

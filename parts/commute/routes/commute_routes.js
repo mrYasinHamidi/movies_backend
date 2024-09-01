@@ -5,3 +5,4 @@ router
     .post('/', controller.createCommutes)
     .get('/:id', controller.getCommuteById)
     .get('/', controller.createCommutes);
+module.exports = router;
