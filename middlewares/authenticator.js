@@ -1,6 +1,4 @@
-const Token = require("../parts/authantication/models/token");
-
-const User = require("../parts/user/models/user");
+const {User} = require("../parts/user/models/user_model");
 
 const AppError = require("../models/app_error");
 

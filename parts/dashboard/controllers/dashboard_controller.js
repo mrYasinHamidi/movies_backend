@@ -1,37 +1,34 @@
 const AppError = require("../../../models/app_error");
-const User = require("../../user/models/user");
-const getDashboard = (req, res, next) => {
+
+const {Personnel, Manager} = require("../../user/models/user_model");
+
+const getManagerDashboard = async (req, res, next) => {
     try {
         const user = req.user;
-        if (user.role === 'manager') {
-            return getManagerDashboard(user, req, res, next);
-        } else if (user.role === 'employee') {
-            return getEmployeeDashboard(user, req, res, next);
-        } else {
-            return new AppError('Invalid user type', 404);
-        }
+        const personnel = await Personnel.find({managerId: user.id});
+        const absentees = personnel.filter(item => item.isPresence === false);
+        const absences = personnel.filter(item => item.isPresence === true);
+
+        return res.success({
+            personnelCount: personnel.length,
+            absencesCount: absences.length,
+            absenteesCount: absentees.length,
+            absences: absences.length > 10 ? absences.slice(0, 10) : absences,
+            absentees: absentees.length > 10 ? absentees.slice(0, 10) : absentees,
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+const getPersonnelDashboard = async (req, res, next) => {
+    try {
+        const user = req.user;
+        const personnel = await Personnel.findById(user._id);
+        const isPresence = personnel.isPresence;
+        return res.success({isPresence: isPresence});
     } catch (err) {
         next(err);
     }
 }
 
-const getEmployeeDashboard = async (user, req, res, next) => {
-    const employee = await User.findById(user._id);
-    const isPresence = employee.presence;
-    return res.success({isPresence: isPresence});
-}
-
-const getManagerDashboard = async (user, req, res, next) => {
-    const employees = await User.find({managerId: user.id});
-    const absentees = employees.filter(item => item.presence === undefined);
-    const absences = employees.filter(item => item.presence === true);
-
-    return res.success({
-        personnelCount: employees.length,
-        absencesCount: absences.length,
-        absenteesCount: absentees.length,
-        absences: absences.length > 10 ? absences.slice(0, 10) : absences,
-        absentees: absentees.length > 10 ? absentees.slice(0, 10) : absentees,
-    });
-}
-module.exports = {getDashboard}
+module.exports = {getPersonnelDashboard, getManagerDashboard}

@@ -4,6 +4,8 @@ const router = express.Router();
 
 const controller = require('../controllers/dashboard_controller');
 
-router.get('/', controller.getDashboard);
+router.get('/manager', controller.getManagerDashboard);
+
+router.get('/personnel', controller.getPersonnelDashboard);
 
 module.exports = router;

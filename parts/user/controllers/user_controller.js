@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const {User, Manager, Personnel} = require('../models/user_model');
 
 const AppError = require("../../../models/app_error");
 
@@ -59,9 +59,9 @@ const createEmployee = async (req, res, next) => {
             nationalCodeExists,
             personnelCodeExists
         ] = await Promise.all([
-            User.exists({username}),
-            User.exists({nationalCode}),
-            User.exists({personnelCode}),
+            Personnel.exists({username}),
+            Personnel.exists({nationalCode}),
+            Personnel.exists({personnelCode}),
         ]);
 
         const errors = [];
@@ -74,7 +74,7 @@ const createEmployee = async (req, res, next) => {
             return next(new AppError(errors.join(' '), 431));
         }
 
-        const user = new User({
+        const user = new Personnel({
             username,
             name,
             nationalCode,

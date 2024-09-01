@@ -1,4 +1,4 @@
-const User = require('../../user/models/user');
+const {User, Manager, Personnel} = require('../../user/models/user_model');
 
 const Token = require('../models/token');
 
@@ -12,7 +12,7 @@ const register = async (req, res, next) => {
     const {email, password, password_confirm, name, phone} = req.body;
     try {
 
-        let user = await User.findOne({
+        let user = await Manager.findOne({
             $or: [
                 {email: email},
                 {phone: phone}
@@ -26,7 +26,7 @@ const register = async (req, res, next) => {
             return next(new AppError('Password and password confirmation is not equal', 402));
         }
 
-        user = new User({email: email, name: name, phone: phone, password: password});
+        user = new Manager({email: email, name: name, phone: phone, password: password});
 
         await user.save();
         return res.success();
@@ -40,7 +40,7 @@ const login = async (req, res, next) => {
     try {
         const {email, password} = req.body;
 
-        let user = await User.findOne({email});
+        let user = await Manager.findOne({email});
 
         if (!user || !user.comparePassword(password)) {
             return next(new AppError('Email or password incorrect', 401));
