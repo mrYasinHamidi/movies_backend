@@ -22,7 +22,9 @@ pwdSchema
 const userSchema = new Schema({
     email: {
         type: String,
-        required: true,
+        required: function () {
+            return this.role === 'manager';
+        },
         unique: true,
         lowercase: true,
         trim: true,
