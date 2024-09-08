@@ -33,7 +33,7 @@ const authenticate = async (req, res, next) => {
 
         console.log(e);
 
-        next(new AppError('Unauthorized', 401));
+        next(e);
 
     }
 }

@@ -4,7 +4,7 @@ const router = express.Router();
 
 const authController = require('../controllers/auth_controller');
 
-router.get('/refresh_token',authController.refreshToken);
+router.post('/refresh_token',authController.refreshToken);
 
 router.post('/register', authController.register);
 

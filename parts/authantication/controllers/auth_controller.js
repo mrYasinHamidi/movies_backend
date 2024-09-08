@@ -95,7 +95,7 @@ const refreshToken = async (req, res, next) => {
 
         await token.save();
 
-        res.status(200).json({newAccessToken, newRefreshToken});
+        res.success({accessToken: newAccessToken, refreshToken: newRefreshToken});
 
     } catch (e) {
         next(e);

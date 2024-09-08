@@ -16,11 +16,8 @@ if (process.env.NODE_ENV !== 'production') {
 const errorHandler = (err, req, res, next) => {
     logger.error(err.stack);
     res.error(err.message || 'Internal Server Error',
-        process.env.NODE_ENV === 'production' ? {} : err.stack
+        process.env.NODE_ENV === 'production' ? {} : err.stack,
+        err.status,
     )
-    // res.status(err.status || 500).json({
-    //     message: err.message || 'Internal Server Error',
-    //     stack: process.env.NODE_ENV === 'production' ? {} : err.stack
-    // });
 };
 module.exports = errorHandler;
