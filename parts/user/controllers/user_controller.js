@@ -27,12 +27,12 @@ const getEmployees = async (req, res, next) => {
 
         let employees;
 
-        const filter = User.filter({name, personnelCode, managerId: userId});
+        const filter = Personnel.filter({name, personnelCode, managerId: userId});
 
         if (paginate) {
-            employees = await User.paginate(filter, req.query.page, req.query.limit);
+            employees = await Personnel.paginate(filter, req.query.page, req.query.limit);
         } else {
-            employees = await User.find(filter);
+            employees = await Personndel.find(filter);
         }
 
         res.success(employees);
